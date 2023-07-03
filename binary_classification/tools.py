@@ -9,8 +9,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import learning_curve
+from sklearn.model_selection import train_test_split, learning_curve, GridSearchCV
 from sklearn import metrics
 
 
@@ -82,6 +81,22 @@ def plot_learning_curve(model_obj, X, y, cv=None,
     plt.show()
 
 
+def hyperparameter_optimization(model, param_grid, X, y, cv=5):
+    """
+    Function that performs hyperparameter optimization for a given model.
+    """
+    grid_search = GridSearchCV(model, param_grid, cv=cv)
+    grid_search.fit(X, y)
+
+    best_params = grid_search.best_params_
+    best_score = grid_search.best_score_
+
+    print(f'Best hyperparameters found: {best_params}')
+    print(f'Best score: {round(best_score, 4)}')
+
+    return best_params
+
+
 def evaluation(y_true, y_pred):
     """
     Given target real values and predicted ones by a model, this function
@@ -112,7 +127,7 @@ def train_and_evaluate_model(model_obj, data, store_outputs=False):
     eval_train = evaluation(data['y_train'], preds_train)
     eval_test = evaluation(data['y_test'], preds_test)
 
-    print(f"For model {model_obj.model_name} with {model_obj.model_hyperparameters}:\n")
+    print(f"For model {model_obj.model_name} with {model_obj.hyperparameters}:\n")
     print("Results for train set:\n")
     print(eval_train)
 
@@ -134,15 +149,14 @@ def train_and_evaluate_model(model_obj, data, store_outputs=False):
     plt.yticks(np.arange(len(class_labels)), class_labels)
 
     if store_outputs:
-        # Create directories if they don't exist
-        output_dir = f'data/outputs/{model_obj.model_name}'
+        # Create directories if they don't exist.
+        output_dir = f'outputs/{model_obj.model_name}'
         os.makedirs(output_dir, exist_ok=True)
-        # Save the model
+
+        # Save the model.
         with open(f'{output_dir}/model.pkl', 'wb') as file:
             pickle.dump(model, file)
 
-        # Save the evaluation
-        eval_train.to_csv(f'data/outputs/{model_obj.model_name}/Train_Evaluation.csv')
-        eval_test.to_csv(f'data/outputs/{model_obj.model_name}/Test_Evaluation.csv')
-
-# TODO: hyperparam optimization method
+        # Save the evaluation.
+        eval_train.to_csv(f'outputs/{model_obj.model_name}/Train_Evaluation.csv')
+        eval_test.to_csv(f'outputs/{model_obj.model_name}/Test_Evaluation.csv')
