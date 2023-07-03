@@ -19,6 +19,7 @@ class Model():
         self._model_list = ['LinearRegression', 'LogisticRegression',
                             'RandomForest', 'DecisionTree', 'SVM',
                             'NaiveBayes']
+        self._model = None
 
         assert self._model_name in self._model_list, f"Model {model_name} is not available, \
                                                       possible models are {self._model_list}"
@@ -51,6 +52,16 @@ class Model():
         for defined model (dict).
         """
         return self.hyperparams_to_optimize
+
+    @property
+    def model(self, **kwargs):
+        """
+        Defines and returns a model based on initialization class parameters.
+        """
+        self._model = self.define_model(**kwargs)
+
+        return self._model
+
 
     def define_model(self, **kwargs):
         """
