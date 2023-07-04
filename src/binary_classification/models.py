@@ -1,3 +1,6 @@
+"""
+Implements class Model.
+"""
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -14,9 +17,9 @@ class Model():
         self._model_name = model_name
         self._optimization = optimization
         if not kwargs:
-          self._hyperparameters = {}
+            self._hyperparameters = {}
         else:
-          self._hyperparameters = kwargs['kwargs']
+            self._hyperparameters = kwargs['kwargs']
         self._default_hyperparams_to_optimize = None
         self._model_list = ['LogisticRegression',
                             'RandomForest', 'DecisionTree', 'Svm',
@@ -214,9 +217,10 @@ class Model():
         gamma = self.hyperparameters.get('gamma', 'scale') # Kernel coefficient.
         degree = self.hyperparameters.get('degree', 3) # The degree of the polynomial kernel
                                                 # function 'poly'.
-        class_weight = self.hyperparameters.get('class_weight', None) # Weights associated with classes.
-        kernel = self.hyperparameters.get('kernel', 'rbf') # Kernel function used to transform the input
-                                                # space into a higher-dimensional feature space.
+        class_weight = self.hyperparameters.get('class_weight', None) # Weights associated
+                                                                      # with classes.
+        kernel = self.hyperparameters.get('kernel', 'rbf') # Kernel function used to transform
+                                     # the input space into a higher-dimensional feature space.
 
         # Hyperparameters that will be used when defining the model.
         self.hyperparameters = {'C': c_reg,
