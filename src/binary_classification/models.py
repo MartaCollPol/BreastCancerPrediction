@@ -14,12 +14,15 @@ class Model():
     def __init__(self, model_name, optimization=False, **kwargs):
         self._model_name = model_name
         self._optimization = optimization
-        self._hyperparameters = None
+        if not kwargs:
+          self._hyperparameters = {}
+        else:
+          self._hyperparameters = kwargs['kwargs']
         self._default_hyperparams_to_optimize = None
         self._model_list = ['LogisticRegression',
                             'RandomForest', 'DecisionTree', 'SVM',
                             'NaiveBayes']
-        self._model = self.define_model(**kwargs)
+        self._model = self.define_model()
 
         assert self._model_name in self._model_list, (f"Model {model_name} is not available," +
                                                       f"possible models are {self._model_list}")
@@ -76,7 +79,7 @@ class Model():
         return self._model
 
 
-    def define_model(self, **kwargs):
+    def define_model(self):
         """
         Defines a model given it's name using default hyperparameters if not given.
         Returns defined model and hyperparameters used.
@@ -87,28 +90,26 @@ class Model():
             if self._optimization:
                 # Default hyperparameter ranges to explore in hyperparameter optimization.
                 self.hyperparams_to_optimize = {'penalty': ['l2'],
-                                                'C': [100, 1000, 10000],
+                                                'C': [1000, 10000, 20000, 30000],
                                                 'solver': ['newton-cg',
                                                            'lbfgs',
                                                            'liblinear',
                                                            'sag',
                                                            'saga'],
-                                                'max_iter': [5000, 6000, 7000]}                
+                                                'max_iter': [5500, 6000, 7000]}                
                 return LogisticRegression()
 
             # Hyperparameters to be used when defining the model.
-            penalty = kwargs.get('penalty', 'l2') # Regularization penalty term.
-            c_reg = kwargs.get('C', 1.0) # Inverse of regularization strength.
-            solver = kwargs.get('solver', 'lbfgs') # Algorithm to use for optimization.
-            max_iter = kwargs.get('max_iter',
+            penalty = self._hyperparameters.get('penalty', 'l2') # Regularization penalty term.
+            c_reg = self._hyperparameters.get('C', 1.0) # Inverse of regularization strength.
+            solver = self._hyperparameters.get('solver', 'lbfgs') # Algorithm to use for optimization.
+            max_iter = self._hyperparameters.get('max_iter',
                                   100) # Maximum number of iterations for the solver to converge.
 
-            # Hyperparameters that will be used when defining the model.
             self.hyperparameters = {'penalty': penalty,
-                                    'C': c_reg,
+                                    'c_reg': c_reg,
                                     'solver': solver,
                                     'max_iter': max_iter}
-
             # Model definition.
             model = LogisticRegression(penalty=penalty, C=c_reg, solver=solver, max_iter=max_iter)
 
@@ -118,34 +119,29 @@ class Model():
             # Return model initialization without setting hyperparams if optimization = True.
             if self._optimization:
                 # Default hyperparameter ranges to explore in hyperparameter optimization.
-                self.hyperparams_to_optimize = {'n_estimators': [50, 100, 200, 500, 1000],
+                self.hyperparams_to_optimize = {'n_estimators': [10, 20, 50, 100],
                                                 'max_depth':  [None, 5, 10, 20],
                                                 'min_samples_split':  [2, 5, 10],
                                                 'min_samples_leaf': [1, 2, 4],
-                                                'max_features': ['auto', 'sqrt', 'log2', 0.5]}
+                                                'max_features': ['sqrt', 'log2', 0.5]}
                 return RandomForestClassifier()
 
             # Hyperparameters to be used when defining the model.
-            if kwargs is not None:
-                n_estimators = kwargs['kwargs']['n_estimators']
-                max_depth = kwargs['kwargs']['max_depth']
-                min_samples_split = kwargs ['kwargs']['min_samples_split']
-                min_samples_leaf = kwargs['kwargs']['min_samples_leaf']
-                max_features = kwargs['kwargs']['max_features']
-            else:
-                n_estimators = 100 # Number of decision trees in Rforest.
-                max_depth = None # Maximum depth of each decision tree.
-                min_samples_split = 2 # Minimum number of samples to split an internal node.
-                min_samples_leaf = 1 # Minimum number of samples to be at a leaf node.
-                max_features = 'auto' # Number of features to consider when looking
-                                      # for the best split.
-
+            n_estimators = self.hyperparameters.get('n_estimators', 100)
+            max_depth = self.hyperparameters.get('max_depth', None)
+            min_samples_split = self.hyperparameters.get('min_samples_split', 2)
+            min_samples_leaf = self.hyperparameters.get('min_samples_leaf', 1)
+            max_features = self.hyperparameters.get('max_features', 'sqrt')
+            
             # Hyperparameters that will be used when defining the model.
-            self.hyperparameters = {'n_estimators': n_estimators,
-                                    'max_depth': max_depth,
-                                    'min_samples_split': min_samples_split,
-                                    'min_samples_leaf': min_samples_leaf,
-                                    'max_features': max_features}
+            self.hyperparameters = {'n_estimators': n_estimators, # Number of decision trees in Rforest.
+                                    'max_depth': max_depth, # Maximum depth of each decision tree.
+                                    'min_samples_split': min_samples_split, # Minimum number of samples to
+                                                                            # split an internal node.
+                                    'min_samples_leaf': min_samples_leaf, # Minimum number of samples to be
+                                                                          # at a leaf node.
+                                    'max_features': max_features} # Number of features to consider when
+                                                                  # looking for the best split.
 
             # Model definition.
             model = RandomForestClassifier(n_estimators=n_estimators,
@@ -164,18 +160,18 @@ class Model():
                                                 'max_depth': [None, 5, 10, 20],
                                                 'min_samples_split': [2, 5, 10],
                                                 'min_samples_leaf': [1, 2, 4],
-                                                'max_features': ['auto', 'sqrt', 'log2', 0.5]}
+                                                'max_features': ['sqrt', 'log2', 0.5]}
                 return DecisionTreeClassifier()
 
             # Hyperparameters to be used when defining the model.
-            criterion = kwargs.get('criterion', 'gini') # Function to measure quality of a
+            criterion = self.hyperparameters.get('criterion', 'gini') # Function to measure quality of a
                                                               # split.
-            max_depth = kwargs.get('max_depth', None) # Maximum depth of each decision tree.
-            min_samples_split = kwargs.get('min_samples_split', 2) # Minimum number of samples
+            max_depth = self.hyperparameters.get('max_depth', None) # Maximum depth of each decision tree.
+            min_samples_split = self.hyperparameters.get('min_samples_split', 2) # Minimum number of samples
                                                                    # to split an internal node.
-            min_samples_leaf = kwargs.get('min_samples_leaf', 1) # Minimum number of samples
+            min_samples_leaf = self.hyperparameters.get('min_samples_leaf', 1) # Minimum number of samples
                                                                  # to be at a leaf node.
-            max_features = kwargs.get('max_features', 'auto') # Number of features to consider
+            max_features = self.hyperparameters.get('max_features', 'sqrt') # Number of features to consider
                                                                   # when looking for the best split.
 
             # Hyperparameters that will be used when defining the model.
@@ -190,8 +186,7 @@ class Model():
                                            max_depth=max_depth,
                                            min_samples_split=min_samples_split,
                                            min_samples_leaf=min_samples_leaf,
-                                           max_features=max_features
-                                           )
+                                           max_features=max_features)
 
             return model
 
@@ -206,12 +201,12 @@ class Model():
                 return SVC()
 
             # Hyperparameters to be used when defining the model.
-            c_reg = kwargs.get('C', 1.0) # The regularization parameter.
-            gamma = kwargs.get('gamma', 'scale') # Kernel coefficient.
-            degree = kwargs.get('degree', 3) # The degree of the polynomial kernel
+            c_reg = self.hyperparameters.get('C', 1.0) # The regularization parameter.
+            gamma = self.hyperparameters.get('gamma', 'scale') # Kernel coefficient.
+            degree = self.hyperparameters.get('degree', 3) # The degree of the polynomial kernel
                                                    # function 'poly'.
-            class_weight = kwargs.get('class_weight', None) # Weights associated with classes.
-            kernel = kwargs.get('kernel', 'rbf') # Kernel function used to transform the input
+            class_weight = self.hyperparameters.get('class_weight', None) # Weights associated with classes.
+            kernel = self.hyperparameters.get('kernel', 'rbf') # Kernel function used to transform the input
                                                  # space into a higher-dimensional feature space.
 
             # Hyperparameters that will be used when defining the model.
@@ -229,7 +224,7 @@ class Model():
 
         if self._model_name == 'NaiveBayes':
             # Hyperparameters to be used when defining the model.
-            priors = kwargs.get('priors', None) # Can be used to provide prior probabilities
+            priors = self.hyperparameters.get('priors', None) # Can be used to provide prior probabilities
                                                 # of the classes. Useful for imbalanced df.
 
             # Hyperparameters that will be used when defining the model.

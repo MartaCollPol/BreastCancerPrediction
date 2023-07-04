@@ -1,4 +1,5 @@
-from binary_classification import tools as bc
+from utils import utils
+from binary_classification import classification as bc
 from binary_classification.models import Model
 
 
@@ -10,8 +11,8 @@ if __name__ == "__main__":
                 'smoothness_mean', 'compactness_mean', 'concavity_mean']
 
     # Load and split data.
-    df = bc.load_data(DATA_PATH)
-    data = bc.split_train_test(df, PREDICTORS, TARGET)
+    df = utils.load_data(DATA_PATH)
+    data = utils.split_train_test(df, PREDICTORS, TARGET)
 
     model_obj = Model('LogisticRegression', optimization=True)
 
