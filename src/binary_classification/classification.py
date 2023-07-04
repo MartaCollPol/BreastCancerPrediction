@@ -119,16 +119,16 @@ def train_and_evaluate_model(model_obj, data, save_outputs=False, output_dir = "
 
     if save_outputs:
         # Create directories if they don't exist.
-        output_dir = output_dir + '/' + {model_obj.model_name}
-        os.makedirs(output_dir, exist_ok=True)
+        model_dir = output_dir + '/' + model_obj.model_name
+        os.makedirs(model_dir, exist_ok=True)
 
         # Save the model.
-        with open(f'{output_dir}/model.pkl', 'wb') as file:
+        with open(f'{model_dir}/model.pkl', 'wb') as file:
             pickle.dump(model, file)
 
         # Save best params.
-        utils.save_dict_to_csv(model_obj.hyperparameters, f'{output_dir}/best_params.csv' )
+        utils.save_dict_to_csv(model_obj.hyperparameters, f'{model_dir}/best_params.csv' )
 
         # Save the evaluation.
-        eval_train.to_csv(f'{output_dir}/Train_Evaluation.csv')
-        eval_test.to_csv(f'{output_dir}/Test_Evaluation.csv')
+        eval_train.to_csv(f'{model_dir}/Train_Evaluation.csv')
+        eval_test.to_csv(f'{model_dir}/Test_Evaluation.csv')
