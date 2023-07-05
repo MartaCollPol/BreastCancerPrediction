@@ -1,3 +1,4 @@
+from sklearn.ensemble import VotingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -20,7 +21,7 @@ class Model():
         self._default_hyperparams_to_optimize = None
         self._model_list = ['LogisticRegression',
                             'RandomForest', 'DecisionTree', 'Svm',
-                            'NaiveBayes']
+                            'NaiveBayes', 'EnsembleVoting']
 
         assert self._model_name in self._model_list, (f"Model {model_name} is not available," +
                                                       f"possible models are {self._model_list}")
@@ -246,3 +247,5 @@ class Model():
         model = GaussianNB(priors=priors) # Has no hyperparameters to optimize.
 
         return model
+
+
