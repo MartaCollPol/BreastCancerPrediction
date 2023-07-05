@@ -18,7 +18,13 @@ if __name__ == "__main__":
     df = utils.load_data(DATA_PATH)
     data = utils.split_train_test(df, PREDICTORS, TARGET)
 
-    model_obj = Model('LogisticRegression', optimization=True)
+    #model_obj = Model('LogisticRegression', optimization=True)
+
+    # Ensamble voting classifier
+    estimators = [{'name':'LogisticRegression', 'params':{}},
+                  {'name': 'Svm', 'params': {}},
+                  {'name':'DecisionTree', 'params':{}}]
+    model_obj = Model('EnsambleVoting', estimators=estimators, optimization=True)
 
     # Hyperparameter optimization.
     best_params = bc.hyperparameter_optimization(model_obj.model,
@@ -28,7 +34,8 @@ if __name__ == "__main__":
                                                 cv=5)
 
     # Study with best params.
-    model_obj = Model('LogisticRegression', kwargs=best_params)
+    # model_obj = Model('LogisticRegression', kwargs=best_params) 
+    # # TODO: Check how best params is returned and how to launch voting classifier.
 
     bc.plot_learning_curve(model_obj, df[PREDICTORS], df[TARGET], cv=5)
     bc.train_and_evaluate_model(model_obj, data, save_outputs=True, output_dir=OUTPUT_PATH)

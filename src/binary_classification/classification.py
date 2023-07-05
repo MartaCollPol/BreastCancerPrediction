@@ -6,7 +6,6 @@ import os
 import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 
 from sklearn.model_selection import learning_curve, GridSearchCV
@@ -107,28 +106,8 @@ def train_and_evaluate_model(model_obj, data, save_outputs=False, output_dir = "
     class_labels = ['Class 0', 'Class 1']
 
     # Create a heatmap plot of the confusion matrix
-    sns.heatmap(confusion_matrix, annot=True, fmt='d', cmap='Blues',
-                xticklabels=class_labels, yticklabels=class_labels)
-
-    # Add labels, title, and ticks
-    plt.xlabel('Predicted')
-    plt.ylabel('True')
-    plt.title('Confusion Matrix for Test set')
-    plt.xticks(np.arange(len(class_labels)), class_labels)
-    plt.yticks(np.arange(len(class_labels)), class_labels)
+    utils.plot_confusion_matrix(confusion_matrix, class_labels)
 
     if save_outputs:
-        # Create directories if they don't exist.
-        model_dir = output_dir + '/' + model_obj.model_name
-        os.makedirs(model_dir, exist_ok=True)
-
-        # Save the model.
-        with open(f'{model_dir}/model.pkl', 'wb') as file:
-            pickle.dump(model, file)
-
-        # Save best params.
-        utils.save_dict_to_csv(model_obj.hyperparameters, f'{model_dir}/best_params.csv' )
-
-        # Save the evaluation.
-        eval_train.to_csv(f'{model_dir}/Train_Evaluation.csv')
-        eval_test.to_csv(f'{model_dir}/Test_Evaluation.csv')
+        utils.save_model_outputs(model, model_obj.model_name, model_obj.hyperparameters,
+                                 eval_train, eval_test, output_dir)
