@@ -2,8 +2,6 @@
 Implements all methods for training, optimization, evaluation and prediction
 using ML models defined in Model for binary classification with numerical scaled features.
 """
-import os
-import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np

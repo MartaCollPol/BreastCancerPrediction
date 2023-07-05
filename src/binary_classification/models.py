@@ -1,10 +1,7 @@
-<<<<<<< HEAD
 """
 Implements class Model.
 """
-=======
 from sklearn.ensemble import VotingClassifier
->>>>>>> 1ea37b4491d1fb77ecbac5db9819c64b6df8e6a1
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -18,7 +15,7 @@ class Model():
     """
     Class for model initialization and model properties.
     """
-    def __init__(self, model_name, estimators_info={}, optimization=False, **kwargs):
+    def __init__(self, model_name, estimators_info=None, optimization=False, **kwargs):
         self._model_name = model_name
         self._optimization = optimization
         self._estimators_info = estimators_info
@@ -32,8 +29,8 @@ class Model():
                             'NaiveBayes']
         self._ensamble_methods = ['EnsambleVoting']
 
-        assert self._model_name in self._model_list or self._model_name in self._ensamble_methods, ("Model " +
-                                      f"{model_name} is not available, possible models are {self._model_list}")
+        assert self._model_name in self._model_list or self._model_name in self._ensamble_methods, (
+                     f'Model {model_name} is not available, possible models are {self._model_list}')
 
         # Apply class method to define model based on model_name.
         self._model = getattr(self, utils.get_method_name(self._model_name))()
@@ -59,13 +56,6 @@ class Model():
         """
         return self._hyperparameters
 
-    @hyperparameters.setter
-    def hyperparameters(self, new_value):
-        """
-        Sets a new value for model hyperparameter.
-        """
-        self._hyperparameters = new_value
-
     @property
     def hyperparams_to_optimize(self):
         """
@@ -74,20 +64,19 @@ class Model():
         """
         return self._default_hyperparams_to_optimize
 
-    @hyperparams_to_optimize.setter
-    def hyperparams_to_optimize(self, new_value):
-        """
-        Returns hyperparameters' ranges to explore in hyperparameter optimization
-        for defined model (dict).
-        """
-        self._default_hyperparams_to_optimize = new_value
-    
     @property
     def estimators_info(self):
         """
         Returns estimators set for Ensamble methods.
         """
         return self._estimators_info
+
+    @property
+    def optimization(self):
+        """
+        Returns if model is going to be optimized.
+        """
+        return self._optimization
 
     @property
     def model(self):
@@ -103,14 +92,14 @@ class Model():
         # Return model initialization without hyperparams if optimization = True.
         if self._optimization:
             # Default hyperparameter ranges to explore in hyperparameter optimization.
-            self.hyperparams_to_optimize = {'penalty': ['l2'],
-                                            'C': [1000, 10000, 20000, 30000],
-                                            'solver': ['newton-cg',
-                                                        'lbfgs',
-                                                        'liblinear',
-                                                        'sag',
-                                                        'saga'],
-                                            'max_iter': [5500, 6000, 7000]}                
+            self._default_hyperparams_to_optimize = {'penalty': ['l2'],
+                                                     'C': [1000, 10000, 20000, 30000],
+                                                     'solver': ['newton-cg',
+                                                                'lbfgs',
+                                                                'liblinear',
+                                                                'sag',
+                                                                'saga'],
+                                                     'max_iter': [5500, 6000, 7000]}                
             return LogisticRegression()
 
         # Hyperparameters to be used when defining the model.
@@ -119,10 +108,10 @@ class Model():
         solver = self._hyperparameters.get('solver', 'lbfgs') # Algorithm to use for optimization.
         max_iter = self._hyperparameters.get('max_iter', 100) # Maximum number of iterations
                                                               # for the solver to converge.
-        self.hyperparameters = {'penalty': penalty,
-                                'c_reg': c_reg,
-                                'solver': solver,
-                                'max_iter': max_iter}
+        self._hyperparameters = {'penalty': penalty,
+                                 'c_reg': c_reg,
+                                 'solver': solver,
+                                 'max_iter': max_iter}
         # Model definition.
         model = LogisticRegression(penalty=penalty, C=c_reg, solver=solver, max_iter=max_iter)
 
@@ -135,38 +124,38 @@ class Model():
         # Return model initialization without hyperparams if optimization = True.
         if self._optimization:
             # Default hyperparameter ranges to explore in hyperparameter optimization.
-            self.hyperparams_to_optimize = {'criterion': ['gini', 'entropy'],
-                                            'max_depth': [None, 5, 10, 20],
-                                            'min_samples_split': [2, 5, 10],
-                                            'min_samples_leaf': [1, 2, 4],
-                                            'max_features': ['sqrt', 'log2', 0.5]}
+            self._default_hyperparams_to_optimize = {'criterion': ['gini', 'entropy'],
+                                                     'max_depth': [None, 5, 10, 20],
+                                                     'min_samples_split': [2, 5, 10],
+                                                     'min_samples_leaf': [1, 2, 4],
+                                                     'max_features': ['sqrt', 'log2', 0.5]}
             return DecisionTreeClassifier()
 
         # Hyperparameters to be used when defining the model.
-        criterion = self.hyperparameters.get('criterion', 'gini') # Function to measure quality of a
+        criterion = self._hyperparameters.get('criterion', 'gini') # Function to measure quality of a
                                                                   # split.
-        max_depth = self.hyperparameters.get('max_depth', None) # Maximum depth of each decision
+        max_depth = self._hyperparameters.get('max_depth', None) # Maximum depth of each decision
                                                                 # tree.
-        min_samples_split = self.hyperparameters.get('min_samples_split', 2) # Minimum number of
+        min_samples_split = self._hyperparameters.get('min_samples_split', 2) # Minimum number of
                                                             # samples to split an internal node.
-        min_samples_leaf = self.hyperparameters.get('min_samples_leaf', 1) # Minimum number of
+        min_samples_leaf = self._hyperparameters.get('min_samples_leaf', 1) # Minimum number of
                                                                 # samples to be at a leaf node.
-        max_features = self.hyperparameters.get('max_features', 'sqrt') # Number of features to
+        max_features = self._hyperparameters.get('max_features', 'sqrt') # Number of features to
                                                     # consider when looking for the best split.
 
         # Hyperparameters that will be used when defining the model.
-        self.hyperparameters = {'criterion': criterion,
-                                'max_depth': max_depth,
-                                'min_samples_split': min_samples_split,
-                                'min_samples_leaf': min_samples_leaf,
-                                'max_features': max_features}
+        self._hyperparameters = {'criterion': criterion,
+                                 'max_depth': max_depth,
+                                 'min_samples_split': min_samples_split,
+                                 'min_samples_leaf': min_samples_leaf,
+                                 'max_features': max_features}
 
         # Model definition.
         model = DecisionTreeClassifier(criterion=criterion,
-                                    max_depth=max_depth,
-                                    min_samples_split=min_samples_split,
-                                    min_samples_leaf=min_samples_leaf,
-                                    max_features=max_features)
+                                       max_depth=max_depth,
+                                       min_samples_split=min_samples_split,
+                                       min_samples_leaf=min_samples_leaf,
+                                       max_features=max_features)
 
         return model
 
@@ -177,37 +166,37 @@ class Model():
         # Return model initialization without setting hyperparams if optimization = True.
         if self._optimization:
             # Default hyperparameter ranges to explore in hyperparameter optimization.
-            self.hyperparams_to_optimize = {'n_estimators': [10, 20, 50, 100],
-                                            'max_depth':  [None, 5, 10, 20],
-                                            'min_samples_split':  [2, 5, 10],
-                                            'min_samples_leaf': [1, 2, 4],
-                                            'max_features': ['sqrt', 'log2', 0.5]}
+            self._default_hyperparams_to_optimize = {'n_estimators': [10, 20, 50, 100],
+                                                     'max_depth':  [None, 5, 10, 20],
+                                                     'min_samples_split':  [2, 5, 10],
+                                                     'min_samples_leaf': [1, 2, 4],
+                                                     'max_features': ['sqrt', 'log2', 0.5]}
             return RandomForestClassifier()
 
         # Hyperparameters to be used when defining the model.
-        n_estimators = self.hyperparameters.get('n_estimators', 100)
-        max_depth = self.hyperparameters.get('max_depth', None)
-        min_samples_split = self.hyperparameters.get('min_samples_split', 2)
-        min_samples_leaf = self.hyperparameters.get('min_samples_leaf', 1)
-        max_features = self.hyperparameters.get('max_features', 'sqrt')
+        n_estimators = self._hyperparameters.get('n_estimators', 100)
+        max_depth = self._hyperparameters.get('max_depth', None)
+        min_samples_split = self._hyperparameters.get('min_samples_split', 2)
+        min_samples_leaf = self._hyperparameters.get('min_samples_leaf', 1)
+        max_features = self._hyperparameters.get('max_features', 'sqrt')
 
         # Hyperparameters that will be used when defining the model.
-        self.hyperparameters = {'n_estimators': n_estimators, # Number of decision trees in Rforest.
-                                'max_depth': max_depth, # Maximum depth of each decision tree.
-                                'min_samples_split': min_samples_split, # Minimum number of samples
+        self._hyperparameters = {'n_estimators': n_estimators, # Number of trees in Rforest.
+                                 'max_depth': max_depth, # Maximum depth of each tree.
+                                 'min_samples_split': min_samples_split, # Minimum number of samples
                                                                         # to split an internal node.
-                                'min_samples_leaf': min_samples_leaf, # Minimum number of samples to
-                                                                        # be at a leaf node.
-                                'max_features': max_features} # Number of features to consider when
+                                 'min_samples_leaf': min_samples_leaf, # Minimum number of samples
+                                                                        # to be at a leaf node.
+                                 'max_features': max_features} # Number of features to consider when
                                                                 # looking for the best split.
 
         # Model definition.
         model = RandomForestClassifier(n_estimators=n_estimators,
-                                        max_depth=max_depth,
-                                        min_samples_split=min_samples_split,
-                                        min_samples_leaf=min_samples_leaf,
-                                        max_features=max_features
-                                        )
+                                       max_depth=max_depth,
+                                       min_samples_split=min_samples_split,
+                                       min_samples_leaf=min_samples_leaf,
+                                       max_features=max_features)
+
         return model
 
     def define_svm(self):
@@ -216,25 +205,25 @@ class Model():
         """
         # Return model initialization without hyperparams if optimization = True.
         if self._optimization:
-            self.hyperparams_to_optimize = {'C':[0.1, 1, 10],
-                                            'kernel': ['linear', 'rbf', 'poly'],
-                                            'gamma': ['scale', 'auto', 0.1, 1],
-                                            'degree': [2, 3, 4],
-                                            'class_weight': [None, 'balanced']}
-            return SVC()
+            self._default_hyperparams_to_optimize = {'C':[0.1, 1, 10],
+                                                     'kernel': ['linear', 'rbf', 'poly'],
+                                                     'gamma': ['scale', 'auto', 0.1, 1],
+                                                     'degree': [2, 3, 4],
+                                                     'class_weight': [None, 'balanced']}
+            return SVC(probability=True)
 
         # Hyperparameters to be used when defining the model.
-        c_reg = self.hyperparameters.get('C', 1.0) # The regularization parameter.
-        gamma = self.hyperparameters.get('gamma', 'scale') # Kernel coefficient.
-        degree = self.hyperparameters.get('degree', 3) # The degree of the polynomial kernel
+        c_reg = self._hyperparameters.get('C', 1.0) # The regularization parameter.
+        gamma = self._hyperparameters.get('gamma', 'scale') # Kernel coefficient.
+        degree = self._hyperparameters.get('degree', 3) # The degree of the polynomial kernel
                                                 # function 'poly'.
-        class_weight = self.hyperparameters.get('class_weight', None) # Weights associated
+        class_weight = self._hyperparameters.get('class_weight', None) # Weights associated
                                                                       # with classes.
-        kernel = self.hyperparameters.get('kernel', 'rbf') # Kernel function used to transform
+        kernel = self._hyperparameters.get('kernel', 'rbf') # Kernel function used to transform
                                      # the input space into a higher-dimensional feature space.
 
         # Hyperparameters that will be used when defining the model.
-        self.hyperparameters = {'C': c_reg,
+        self._hyperparameters = {'C': c_reg,
                                 'kernel': kernel,
                                 'gamma': gamma,
                                 'degree': degree,
@@ -242,7 +231,7 @@ class Model():
 
         # Model definition.
         model = SVC(C=c_reg, kernel=kernel, gamma=gamma,
-                    degree=degree, class_weight=class_weight)
+                    degree=degree, class_weight=class_weight, probability=True)
 
         return model
 
@@ -251,11 +240,11 @@ class Model():
         Method to define a Naive Bayes model based on given or default hyperparameters.
         """
         # Hyperparameters to be used when defining the model.
-        priors = self.hyperparameters.get('priors', None) # Can be used to provide prior
+        priors = self._hyperparameters.get('priors', None) # Can be used to provide prior
                                 # probabilities of the classes. Useful for imbalanced df.
 
         # Hyperparameters that will be used when defining the model.
-        self.hyperparameters = {'priors': priors}
+        self._hyperparameters = {'priors': priors}
 
         # Model definition.
         model = GaussianNB(priors=priors) # Has no hyperparameters to optimize.
@@ -267,28 +256,31 @@ class Model():
         Defines voting classifier based on desired estimators and parameters.
         estimators -> list of dicts, dicts have 'name': estimator_name, 'params': {}.
         """
-        assert len(self._estimators_info) > 0, "estimators_info cannot be empty for ensamble voting classifier."
+        assert self._estimators_info is not None, ("Provide estimators_info" +
+                                                   "for ensamble voting classifier.")
+
+        self._optimization = False # Optimization disabled for this model for now.
 
         estimators = []
-        param_grid = {}
+        voting_classifier_params = {}
         for estimator in self._estimators_info:
 
             estimator_name = estimator['name']
-            assert estimator_name in self._model_list, (f'Estimator with name {estimator_name} not available,' +
-                                                        'options are {self._model_list}.')
+            assert estimator_name in self._model_list, (f'Estimator with name {estimator_name} ' +
+                                                  'not available, options are {self._model_list}.')
 
             # Set hyperparameters to be used for estimator model definition.
-            self.hyperparameters = estimator['params']
+            self._hyperparameters = estimator['params']
             method_name = utils.get_method_name(estimator_name)
             estimators.append((estimator_name, getattr(self, method_name)()))
 
-            if self._optimization:
-                # Creates param grid for GridSearch hyperparameter tunning. 
-                utils.transform_param_ranges(param_grid, estimator_name, self._default_hyperparams_to_optimize)
-        
-        self.hyperparams_to_optimize = param_grid
+            # Creates review of hyperparameter used by all estimators that form VC.
+            utils.transform_param_ranges(voting_classifier_params,
+                                         estimator_name,
+                                         self._hyperparameters)
+
+        self._hyperparameters = voting_classifier_params # Used when storing params used.
+
         model = VotingClassifier(estimators=estimators, voting='soft')
-        
+
         return model
-
-

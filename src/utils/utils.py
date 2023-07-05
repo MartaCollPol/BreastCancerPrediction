@@ -2,8 +2,10 @@
 Module to implement utility functions.
 """
 import os
+import pickle
 import csv
 import pandas as pd
+import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -14,7 +16,7 @@ def load_data(data_path):
     """
     Loads cleaned data from csv. Returns pandas DataFrame.
     """
-    assert os.path.exists(data_path), "File does not exist"
+    assert os.path.exists(data_path), f"Filepath {data_path} does not exist"
     assert os.path.splitext(data_path)[1] == ".csv", "File is not a CSV"
 
     df = pd.read_csv(data_path)
@@ -44,7 +46,6 @@ def split_train_test(df, predictors, target, test_size=0.2):
 
 
 def save_dict_to_csv(data_dict, data_path):
-<<<<<<< HEAD
     """
     Save dict() to csv.
     """
@@ -52,14 +53,6 @@ def save_dict_to_csv(data_dict, data_path):
         writer = csv.DictWriter(file, fieldnames=data_dict.keys())
         writer.writeheader()
         writer.writerow(data_dict)
-=======
-  """
-  Save dict() to csv.
-  """
-  with open(data_path, 'w', newline='') as file:
-      writer = csv.DictWriter(file, fieldnames=data_dict.keys())
-      writer.writeheader()
-      writer.writerow(data_dict)
 
 
 def save_model_outputs(model, model_name, hyperparams, eval_train, eval_test, output_dir):
@@ -75,7 +68,7 @@ def save_model_outputs(model, model_name, hyperparams, eval_train, eval_test, ou
         pickle.dump(model, file)
 
     # Save best params.
-    utils.save_dict_to_csv(hyperparams, f'{model_dir}/params.csv' )
+    save_dict_to_csv(hyperparams, f'{model_dir}/params.csv' )
 
     # Save the evaluation.
     eval_train.to_csv(f'{model_dir}/Train_Evaluation.csv')
@@ -114,4 +107,4 @@ def plot_confusion_matrix(confusion_matrix, class_labels):
     plt.title('Confusion Matrix for Test set')
     plt.xticks(np.arange(len(class_labels)), class_labels)
     plt.yticks(np.arange(len(class_labels)), class_labels)
->>>>>>> 1ea37b4491d1fb77ecbac5db9819c64b6df8e6a1
+
