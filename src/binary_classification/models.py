@@ -24,7 +24,7 @@ class Model():
         self._model_list = ['LogisticRegression',
                             'RandomForest', 'DecisionTree', 'Svm',
                             'NaiveBayes']
-        self._ensamble_methods = ['EnsembleVoting']
+        self._ensamble_methods = ['EnsambleVoting']
 
         assert self._model_name in self._model_list or self._model_name in self._ensamble_methods, ("Model " +
                                       f"{model_name} is not available, possible models are {self._model_list}")
