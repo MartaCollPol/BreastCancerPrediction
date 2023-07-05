@@ -1,2 +1,0 @@
-penalty,c_reg,solver,max_iter
-l2,20000,newton-cg,5500
