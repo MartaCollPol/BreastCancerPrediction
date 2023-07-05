@@ -69,6 +69,25 @@ def save_model_outputs(model, model_name, hyperparams, eval_train, eval_test, ou
     eval_test.to_csv(f'{model_dir}/Test_Evaluation.csv')
 
 
+def get_method_name(name):
+    """
+    Converts MethodName into method_name.
+    """
+    return 'define_' + ''.join(['_' + c.lower() if c.isupper() else c for c in name]).lstrip('_')
+
+
+def transform_param_ranges(param_grid, model_name, param_ranges):
+    """
+    Transforms parameters to optimize with GridSearch for a model and ads them to existing param grid.
+    Meant to be used for models that combine classifiers like ensamble models.  
+    """
+    transformed_ranges = {}
+    for param, values in param_ranges.items():
+        transformed_param = f'{model_name}__{param}'
+        transformed_ranges[transformed_param] = values
+    return param_grid.update(transformed_ranges)
+
+
 def plot_confusion_matrix(confusion_matrix, class_labels):
     """
     Plots a confusion matrix using a headmap.

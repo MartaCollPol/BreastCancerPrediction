@@ -5,15 +5,17 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB # Asumes features are independent
                                            # and follow a gaussian distribution.
+from utils import utils
 
 
 class Model():
     """
     Class for model initialization and model properties.
     """
-    def __init__(self, model_name, optimization=False, **kwargs):
+    def __init__(self, model_name, estimators_info={}, optimization=False, **kwargs):
         self._model_name = model_name
         self._optimization = optimization
+        self._estimators_info = estimators_info
         if not kwargs:
           self._hyperparameters = {}
         else:
@@ -21,16 +23,14 @@ class Model():
         self._default_hyperparams_to_optimize = None
         self._model_list = ['LogisticRegression',
                             'RandomForest', 'DecisionTree', 'Svm',
-                            'NaiveBayes', 'EnsembleVoting']
+                            'NaiveBayes']
+        self._ensamble_methods = ['EnsembleVoting']
 
-        assert self._model_name in self._model_list, (f"Model {model_name} is not available," +
-                                                      f"possible models are {self._model_list}")
+        assert self._model_name in self._model_list or self._model_name in self._ensamble_methods, ("Model " +
+                                      f"{model_name} is not available, possible models are {self._model_list}")
 
         # Apply class method based on model_name.
-        method_name = 'define_' + ''.join(['_' + c.lower()
-                                           if c.isupper() else c
-                                           for c in model_name]).lstrip('_')
-        self._model = getattr(self, method_name)()
+        self._model = getattr(self, utils.get_method_name(self._model_name))()
 
     @property
     def model_name(self):
@@ -75,6 +75,13 @@ class Model():
         for defined model (dict).
         """
         self._default_hyperparams_to_optimize = new_value
+    
+    @property
+    def estimators_info(self):
+        """
+        Returns estimators set for Ensamble methods.
+        """
+        return self._estimators_info
 
     @property
     def model(self):
@@ -246,6 +253,35 @@ class Model():
         # Model definition.
         model = GaussianNB(priors=priors) # Has no hyperparameters to optimize.
 
+        return model
+
+    def define_ensamble_voting(self):
+        """
+        Defines voting classifier based on desired estimators and parameters.
+        estimators -> list of dicts, dicts have 'name': estimator_name, 'params': {}.
+        """
+        assert len(self._estimators_info) > 0, "estimators_info cannot be empty for ensamble voting classifier."
+
+        estimators = []
+        param_grid = {}
+        for estimator in self._estimators_info:
+
+            estimator_name = estimator['name']
+            assert estimator_name in self._model_list, (f'Estimator with name {estimator_name} not available,' +
+                                                        'options are {self._model_list}.')
+
+            # Set hyperparameters to be used for estimator model definition.
+            self.hyperparameters = estimator['params']
+            method_name = utils.get_method_name(estimator_name)
+            estimators.append((estimator_name, getattr(self, method_name)()))
+
+            if self._optimization:
+                # Creates param grid for GridSearch hyperparameter tunning. 
+                utils.transform_param_ranges(param_grid, estimator_name, self._default_hyperparams_to_optimize)
+        
+        self.hyperparams_to_optimize = param_grid
+        model = VotingClassifier(estimators=estimators, voting='soft')
+        
         return model
 
 
