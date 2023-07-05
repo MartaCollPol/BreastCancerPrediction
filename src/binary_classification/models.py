@@ -29,7 +29,7 @@ class Model():
         assert self._model_name in self._model_list or self._model_name in self._ensamble_methods, ("Model " +
                                       f"{model_name} is not available, possible models are {self._model_list}")
 
-        # Apply class method based on model_name.
+        # Apply class method to define model based on model_name.
         self._model = getattr(self, utils.get_method_name(self._model_name))()
 
     @property
